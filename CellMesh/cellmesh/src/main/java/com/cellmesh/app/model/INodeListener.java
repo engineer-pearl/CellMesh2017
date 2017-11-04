@@ -47,7 +47,15 @@ public interface INodeListener {
     UI MUST append the message to a message log with the name
     currently associated with the link id.
      */
-    void onData(String newMessage, Long fromLinkId);
+    void onDataReceived(String newMessage, Long fromLinkId);
+    /*
+    Called when we send data to the swarm
+    UI MUST append the message to a message log with the users nickname.
+    NOTE: This method should be used to update the UI, rather than having
+    the UI update the message log directly before or after a call to
+    Node.broadcastMessage. This allows optimizations behind the scenes.
+     */
+    void onDataSent(String newMessage, Long fromLinkId);
     /*
     Called when we receive an emergency notification from another link.
     The UI MUST display a message acknologing the event.

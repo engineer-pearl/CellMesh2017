@@ -93,7 +93,7 @@ public class Node implements TransportListener
 		return framesCount;
 	}
 
-	public void broadcastFrame(byte[] frameData)
+	public void broadcastMessage(String frameData)
 	{
 		if(links.isEmpty())
 			return;
