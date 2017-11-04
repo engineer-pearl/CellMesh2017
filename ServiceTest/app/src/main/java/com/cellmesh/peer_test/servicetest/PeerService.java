@@ -1,7 +1,12 @@
 package com.cellmesh.peer_test.servicetest;
 
+import android.app.Activity;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
@@ -9,8 +14,51 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import java.io.FileDescriptor;
+import java.util.HashMap;
+
+import android.net.wifi.p2p.*;
 
 public class PeerService extends Service {
+    private WifiP2pManager p2pManager;
+    private WifiP2pManager.Channel p2pChannel;
+    private IntentFilter p2pIntentFilter;
+    private P2PBroadcastReceiver p2pReceiver;
+    private WifiP2pDnsSdServiceInfo p2pElectionService;
+    class P2PBroadcastReceiver extends BroadcastReceiver{
+        private final WifiP2pManager p2pManager;
+        private final WifiP2pManager.Channel p2pChannel;
+        private final Service peerService;
+        public P2PBroadcastReceiver(WifiP2pManager manager,WifiP2pManager.Channel channel,Service service) {
+            super();
+            p2pManager=manager;
+            p2pChannel=channel;
+            peerService=service;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()){
+                case WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION:
+                    Log.d("P2P","Connection Changed");
+                    break;
+                case WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION:
+                    Log.d("P2P","Peers Changed");
+                    break;
+                case WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION:
+                    Log.d("P2P","State Changed");
+                    break;
+                case WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION:
+                    Log.d("P2P","Device Changed");
+                    break;
+                case WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION:
+                    Log.d("P2P","Services Changed");
+                    p2pManager.
+                default:
+                    Log.d("P2P","Unknown action.");
+                    break;
+            }
+        }
+    }
     public PeerService() {
         Log.d("P2P","Service Constructed");
     }
@@ -18,12 +66,48 @@ public class PeerService extends Service {
     @Override
     public void onCreate() {
         Log.d("P2P","Service Created");
+        p2pIntentFilter=new IntentFilter();
+        p2pIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        p2pIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+        p2pIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        p2pIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        p2pManager=(WifiP2pManager)getSystemService(WIFI_P2P_SERVICE);
+        p2pChannel=p2pManager.initialize(getApplicationContext(),getMainLooper(),null);
+        p2pReceiver=new P2PBroadcastReceiver(p2pManager,p2pChannel,this);
+        HashMap<String,String> p2pElectionServiceData=new HashMap<>();
+        p2pElectionServiceData.put("PORT","99821");
+        p2pElectionService=WifiP2pDnsSdServiceInfo.newInstance("ElectionService","_p2p._election._tcp",p2pElectionServiceData);
+        p2pManager.addLocalService(p2pChannel, p2pElectionService, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d("P2P.Election","Registered");
+            }
+
+            @Override
+            public void onFailure(int i) {
+
+                Log.d("P2P.Election","Registration Failed");
+            }
+        });
+        registerReceiver(p2pReceiver,p2pIntentFilter);
         super.onCreate();
     }
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         Log.d("P2P","Service Removed");
+        unregisterReceiver(p2pReceiver);
+        p2pManager.removeLocalService(p2pChannel, p2pElectionService, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d("P2P.Election","Unregistered");
+            }
+
+            @Override
+            public void onFailure(int i) {
+                Log.d("P2P.Election","Unregistration Failed");
+            }
+        });
         super.onTaskRemoved(rootIntent);
     }
 
