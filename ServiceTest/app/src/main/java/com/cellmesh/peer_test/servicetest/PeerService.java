@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
@@ -111,7 +112,34 @@ public class PeerService extends Service {
             }
         };
         p2pManager.setDnsSdResponseListeners(p2pChannel,sdServiceResponseListener,txtRecordListener);
+        WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
+        p2pManager.addServiceRequest(p2pChannel,
+                serviceRequest,
+                new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("P2P.ServiceDiscovery","Service Request Completed");
+                    }
 
+                    @Override
+                    public void onFailure(int code) {
+
+                        Log.d("P2P.ServiceDiscovery","Service Request Failed");
+                        // Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY
+                    }
+                });
+        p2pManager.discoverServices(p2pChannel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d("P2P.ServiceDiscovery","Service Discovery Successful");
+            }
+
+            @Override
+            public void onFailure(int i) {
+
+                Log.d("P2P.ServiceDiscovery","Service Discovery Failed");
+            }
+        });
         super.onCreate();
     }
 
