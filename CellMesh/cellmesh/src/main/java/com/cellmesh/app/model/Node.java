@@ -95,7 +95,11 @@ public class Node implements TransportListener
 		for(Link link : links)
 			link.sendFrame(frameData.getBytes());
 	}
+	//Call this when the names need to be updated by the UI.
+	private void DoNameUpdate(){
 
+		listener.onNamesUpdated(null);
+	}
 	//region TransportListener
 	@Override
 	public void transportNeedsActivity(Transport transport, ActivityCallback callback)
