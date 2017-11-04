@@ -19,7 +19,6 @@ import android.util.Log
 
 class MainActivity : AppCompatActivity() {
     inner class P2pStateReceiver : BroadcastReceiver() {
-
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
             if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION == action) {
@@ -32,7 +31,6 @@ class MainActivity : AppCompatActivity() {
                     this@MainActivity.setIsWifiP2pEnabled(false)
                 }
             } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION == action) {
-
                 Log.d("P2P", "Peers Changed")
                 val obj = object : WifiP2pManager.PeerListListener {
                     override fun onPeersAvailable(p0: WifiP2pDeviceList?) {
@@ -42,20 +40,15 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-
                 p2pManager?.requestPeers(p2pChannel, obj)
-
                 // The peer list has changed!  We should probably do something about
                 // that.
-
             } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION == action) {
                 Log.d("P2P", "Connection Changed")
                 // Connection state changed!  We should probably do something about
                 // that.
-
             } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION == action) {
                 Log.d("P2P", "Device Changed")
-
                 // val fragment = activity.getFragmentManager()
                 //         .findFragmentById(R.id.frag_list) as DeviceListFragment
                 // fragment.updateThisDevice(intent.getParcelableExtra<Parcelable>(
