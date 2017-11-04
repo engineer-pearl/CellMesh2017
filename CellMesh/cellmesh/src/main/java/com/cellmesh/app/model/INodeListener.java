@@ -16,7 +16,9 @@
 
 package com.cellmesh.app.model;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.underdark.transport.Link;
 
@@ -33,14 +35,14 @@ public interface INodeListener {
     UI MAY display a notification acknowledging the event.
     UI MAY keep a friends list. This is not a priority goal.
      */
-    void onConnected(Long newLinkId);
+    void onConnected(Set<Long> readOnlyIds, Long newId);
 
     /*
     Called when a member leaves our swarm.
     UI MAY display a notification acknloging the event.
     UI MAY keep a friends list. This is not a priority goal.
      */
-    void onDisconnected(Long oldLinkId);
+    void onDisconnected(Set<Long> readOnlyIds,Long oldLinkId);
 
     /*
     Called when we receive data from a member.

@@ -12,8 +12,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.acl.LastOwnerException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import io.netty.util.AsciiString;
 import io.underdark.Underdark;
@@ -33,6 +36,7 @@ public class Node implements TransportListener
 	private Transport transport;
 	private INodeListener listener;
 	private ArrayList<Link> links = new ArrayList<>();
+	private Set<Long> ids=new HashSet<>();
 	private String name;
 	public Node(MainActivity activity,INodeListener listener,String name)
 	{
@@ -46,7 +50,7 @@ public class Node implements TransportListener
 
 		if(nodeId < 0)
 			nodeId = -nodeId;
-
+		ids.add(nodeId);
 		configureLogging();
 		EnumSet<TransportKind> kinds = EnumSet.of(TransportKind.BLUETOOTH, TransportKind.WIFI);
 		this.transport = Underdark.configureTransport(
@@ -95,9 +99,9 @@ public class Node implements TransportListener
 		for(Link link : links)
 			link.sendFrame(frameData.getBytes());
 	}
-	//Call this when the names need to be updated by the UI.
-	private void DoNameUpdate(){
 
+	//Call this when the names need to be updated by the UID
+	private void DoNameUpdate(){
 		listener.onNamesUpdated(null);
 	}
 	//region TransportListener
@@ -112,15 +116,17 @@ public class Node implements TransportListener
 	{
 		Log.d("Mesh","Link "+Long.toString(link.getNodeId())+" Joined");
 		links.add(link);
-		listener.onConnected(link.getNodeId());
+		ids.add(link.getNodeId());
+		listener.onConnected(Collections.unmodifiableSet(ids),link.getNodeId());
 	}
 
 	@Override
 	public void transportLinkDisconnected(Transport transport, Link link)
 	{
 		Log.d("Mesh","Link "+Long.toString(link.getNodeId())+" Left");
+		ids.remove(link.getNodeId());
 		links.remove(link);
-		listener.onDisconnected(link.getNodeId());
+		listener.onConnected(Collections.unmodifiableSet(ids),link.getNodeId());
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
