@@ -1,7 +1,12 @@
 package com.cellmesh.app.model;
 
-import org.slf4j.impl.StaticLoggerBinder;
+import android.util.Log;
+import android.util.Xml;
 
+import org.slf4j.impl.StaticLoggerBinder;
+import org.w3c.dom.NodeList;
+
+import java.security.acl.LastOwnerException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Random;
@@ -21,12 +26,13 @@ public class Node implements TransportListener
 	private MainActivity activity;
 	private long nodeId;
 	private Transport transport;
-
+	private INodeListener listener;
 	private ArrayList<Link> links = new ArrayList<>();
 	private int framesCount = 0;
-
-	public Node(MainActivity activity)
+	private String name;
+	public Node(MainActivity activity,INodeListener listener,String name)
 	{
+		this.name=name;
 		this.activity = activity;
 
 		do
@@ -38,11 +44,7 @@ public class Node implements TransportListener
 			nodeId = -nodeId;
 
 		configureLogging();
-
 		EnumSet<TransportKind> kinds = EnumSet.of(TransportKind.BLUETOOTH, TransportKind.WIFI);
-		//kinds = EnumSet.of(TransportKind.WIFI);
-		//kinds = EnumSet.of(TransportKind.BLUETOOTH);
-
 		this.transport = Underdark.configureTransport(
 				234235,
 				nodeId,
@@ -59,7 +61,6 @@ public class Node implements TransportListener
 				StaticLoggerBinder.getSingleton().getLoggerFactory().getLogger(Node.class.getName());
 		adapter.logger = new NSLogger(activity.getApplicationContext());
 		adapter.logger.connect("192.168.5.203", 50000);
-
 		Underdark.configureLogging(true);
 	}
 
@@ -67,7 +68,7 @@ public class Node implements TransportListener
 	{
 		if(running)
 			return;
-
+		Log.d("Mesh","Starting Node");
 		running = true;
 		transport.start();
 	}
@@ -77,6 +78,7 @@ public class Node implements TransportListener
 		if(!running)
 			return;
 
+		Log.d("Mesh","Stopping Node");
 		running = false;
 		transport.stop();
 	}
@@ -113,6 +115,7 @@ public class Node implements TransportListener
 	@Override
 	public void transportLinkConnected(Transport transport, Link link)
 	{
+		Log.d("Mesh","Link "+Long.toString(link.getNodeId())+" Joined");
 		links.add(link);
 		activity.refreshPeers();
 	}
@@ -120,6 +123,7 @@ public class Node implements TransportListener
 	@Override
 	public void transportLinkDisconnected(Transport transport, Link link)
 	{
+		Log.d("Mesh","Link "+Long.toString(link.getNodeId())+" Left");
 		links.remove(link);
 		activity.refreshPeers();
 
