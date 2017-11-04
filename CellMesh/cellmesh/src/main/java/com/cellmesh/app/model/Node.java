@@ -1,16 +1,21 @@
 package com.cellmesh.app.model;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.util.Log;
 import android.util.Xml;
 
 import org.slf4j.impl.StaticLoggerBinder;
 import org.w3c.dom.NodeList;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.acl.LastOwnerException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Random;
 
+import io.netty.util.AsciiString;
 import io.underdark.Underdark;
 import com.cellmesh.app.MainActivity;
 import io.underdark.transport.Link;
@@ -28,13 +33,12 @@ public class Node implements TransportListener
 	private Transport transport;
 	private INodeListener listener;
 	private ArrayList<Link> links = new ArrayList<>();
-	private int framesCount = 0;
 	private String name;
 	public Node(MainActivity activity,INodeListener listener,String name)
 	{
 		this.name=name;
 		this.activity = activity;
-
+		this.listener=listener;
 		do
 		{
 			nodeId = new Random().nextLong();
@@ -83,26 +87,13 @@ public class Node implements TransportListener
 		transport.stop();
 	}
 
-	public ArrayList<Link> getLinks()
-	{
-		return links;
-	}
-
-	public int getFramesCount()
-	{
-		return framesCount;
-	}
-
 	public void broadcastMessage(String frameData)
 	{
 		if(links.isEmpty())
 			return;
-
-		++framesCount;
-		activity.refreshFrames();
-
+		listener.onDataSent(frameData,nodeId);
 		for(Link link : links)
-			link.sendFrame(frameData);
+			link.sendFrame(frameData.getBytes());
 	}
 
 	//region TransportListener
@@ -117,7 +108,7 @@ public class Node implements TransportListener
 	{
 		Log.d("Mesh","Link "+Long.toString(link.getNodeId())+" Joined");
 		links.add(link);
-		activity.refreshPeers();
+		listener.onConnected(link.getNodeId());
 	}
 
 	@Override
@@ -125,20 +116,14 @@ public class Node implements TransportListener
 	{
 		Log.d("Mesh","Link "+Long.toString(link.getNodeId())+" Left");
 		links.remove(link);
-		activity.refreshPeers();
-
-		if(links.isEmpty())
-		{
-			framesCount = 0;
-			activity.refreshFrames();
-		}
+		listener.onDisconnected(link.getNodeId());
 	}
 
+	@TargetApi(Build.VERSION_CODES.KITKAT)
 	@Override
 	public void transportLinkDidReceiveFrame(Transport transport, Link link, byte[] frameData)
 	{
-		++framesCount;
-		activity.refreshFrames();
+		listener.onDataReceived(new String(frameData, StandardCharsets.US_ASCII),link.getNodeId());
 	}
 	//endregion
 } // Node
