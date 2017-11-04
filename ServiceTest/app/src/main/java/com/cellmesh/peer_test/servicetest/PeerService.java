@@ -20,6 +20,12 @@ import java.util.Map;
 
 import android.net.wifi.p2p.*;
 
+/*
+So far this is just the example code from the android docs wrapped in a service rather
+than an activity. This is done mainly so the mesh negotiation can be done without having to
+have an app running. Ideally this would be an OS service or even a driver, but for a user app
+this is the best we can do.
+ */
 public class PeerService extends Service {
     private WifiP2pManager p2pManager;
     private WifiP2pManager.Channel p2pChannel;
@@ -27,6 +33,12 @@ public class PeerService extends Service {
     private P2PBroadcastReceiver p2pReceiver;
     private WifiP2pDnsSdServiceInfo p2pElectionService;
 
+    /*
+    This class is just a handler for the WifiP2p managers messages. For this experiment we're
+     actually using service discovery instead of direct peer discovery, so we're not actually doing
+     much here. In the future we can either discover peers directly, or handle the DISCOVERY_STARTED?STOPPED
+     messages, possibly to UI and inform the user of a state change.
+     */
     class P2PBroadcastReceiver extends BroadcastReceiver {
         private final WifiP2pManager p2pManager;
         private final WifiP2pManager.Channel p2pChannel;
@@ -68,14 +80,25 @@ public class PeerService extends Service {
     @Override
     public void onCreate() {
         Log.d("P2P", "Service Created");
+        //Set up our basic P2P components, the manager and the channel.
+        //For now we'll use the main looper because we don't really have any need for a custom one.
+        //I'm also not sure whether the app context is appropriate, but it was the easiest to get.
+        p2pManager = (WifiP2pManager) getSystemService(WIFI_P2P_SERVICE);
+        p2pChannel = p2pManager.initialize(getApplicationContext(), getMainLooper(), null);
+
+        //Make an intent filter and custom broadcast handler instance and register it.
         p2pIntentFilter = new IntentFilter();
         p2pIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         p2pIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         p2pIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         p2pIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-        p2pManager = (WifiP2pManager) getSystemService(WIFI_P2P_SERVICE);
-        p2pChannel = p2pManager.initialize(getApplicationContext(), getMainLooper(), null);
         p2pReceiver = new P2PBroadcastReceiver(p2pManager, p2pChannel, this);
+        registerReceiver(p2pReceiver, p2pIntentFilter);
+
+        //Create and add a service description. Right now this description is a lie,
+        //we're not actually doing anything on the specified port yet, but once we
+        //get everything going this will be the service that transfers peer election data.
+
         HashMap<String, String> p2pElectionServiceData = new HashMap<>();
         p2pElectionServiceData.put("PORT", "99821");
         p2pElectionService = WifiP2pDnsSdServiceInfo.newInstance("ElectionService", "_p2p._election._tcp", p2pElectionServiceData);
@@ -91,7 +114,6 @@ public class PeerService extends Service {
                 Log.d("P2P.Election", "Registration Failed");
             }
         });
-        registerReceiver(p2pReceiver, p2pIntentFilter);
         WifiP2pManager.DnsSdTxtRecordListener txtRecordListener = new WifiP2pManager.DnsSdTxtRecordListener() {
             @Override
             public void onDnsSdTxtRecordAvailable(String s, Map<String, String> map, WifiP2pDevice wifiP2pDevice) {
@@ -130,6 +152,8 @@ public class PeerService extends Service {
                         // Command failed.  Check for P2P_UNSUPPORTED, ERROR, or BUSY
                     }
                 });
+        //dispatch an actual request to discover the services. Honestly I'm not sure
+        //what all the noise before this is, but it's apparently important.
         p2pManager.discoverServices(p2pChannel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
@@ -148,6 +172,7 @@ public class PeerService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         Log.d("P2P", "Service Removed");
+        //when we're shutting down our service, go ahead and unregister the event handlers.
         unregisterReceiver(p2pReceiver);
         p2pManager.removeLocalService(p2pChannel, p2pElectionService, new WifiP2pManager.ActionListener() {
             @Override
