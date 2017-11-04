@@ -101,8 +101,11 @@ public class Node implements TransportListener
 	}
 
 	//Call this when the names need to be updated by the UID
-	private void DoNameUpdate(){
+	private void handleNameUpdate(){
 		listener.onNamesUpdated(null);
+	}
+	private void handleSos(){
+		listener.onEmergency(null);
 	}
 	//region TransportListener
 	@Override
@@ -126,7 +129,7 @@ public class Node implements TransportListener
 		Log.d("Mesh","Link "+Long.toString(link.getNodeId())+" Left");
 		ids.remove(link.getNodeId());
 		links.remove(link);
-		listener.onConnected(Collections.unmodifiableSet(ids),link.getNodeId());
+		listener.onDisconnected(Collections.unmodifiableSet(ids),link.getNodeId());
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
