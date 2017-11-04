@@ -15,6 +15,7 @@ import android.util.Log;
 
 import java.io.FileDescriptor;
 import java.util.HashMap;
+import java.util.Map;
 
 import android.net.wifi.p2p.*;
 
@@ -50,9 +51,7 @@ public class PeerService extends Service {
                 case WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION:
                     Log.d("P2P","Device Changed");
                     break;
-                case WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION:
-                    Log.d("P2P","Services Changed");
-                    p2pManager.
+
                 default:
                     Log.d("P2P","Unknown action.");
                     break;
@@ -90,6 +89,29 @@ public class PeerService extends Service {
             }
         });
         registerReceiver(p2pReceiver,p2pIntentFilter);
+        WifiP2pManager.DnsSdTxtRecordListener txtRecordListener=new WifiP2pManager.DnsSdTxtRecordListener() {
+            @Override
+            public void onDnsSdTxtRecordAvailable(String s, Map<String, String> map, WifiP2pDevice wifiP2pDevice) {
+                Log.d("P2P.ServiceDiscovery","Discovered Service Record");
+                Log.d("P2P.ServiceDiscovery","Peer: "+wifiP2pDevice.deviceName);
+                Log.d("P2P.ServiceDiscovery","Service"+s);
+                for(Map.Entry<String,String> entry:map.entrySet()){
+                    Log.i("P2P.ServiceDiscovery","<"+entry.getKey()+">="+entry.getValue());
+                }
+            }
+        };
+        WifiP2pManager.DnsSdServiceResponseListener sdServiceResponseListener=new WifiP2pManager.DnsSdServiceResponseListener() {
+            @Override
+            public void onDnsSdServiceAvailable(String s, String s1, WifiP2pDevice wifiP2pDevice) {
+                Log.d("P2P.ServiceDiscovery","Service Response");
+                Log.d("P2P.ServiceDiscovery","Peer: "+wifiP2pDevice.deviceName);
+                Log.d("P2P.ServiceDiscovery","Service Instance: "+s);
+                Log.d("P2P.ServiceDiscovery","Service Type: "+s1);
+
+            }
+        };
+        p2pManager.setDnsSdResponseListeners(p2pChannel,sdServiceResponseListener,txtRecordListener);
+
         super.onCreate();
     }
 
