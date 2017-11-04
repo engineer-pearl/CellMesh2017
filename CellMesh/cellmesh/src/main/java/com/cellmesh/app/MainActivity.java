@@ -27,7 +27,9 @@ public class MainActivity extends AppCompatActivity
 		peersTextView = (TextView) findViewById(R.id.peersTextView);
 		framesTextView = (TextView) findViewById(R.id.framesTextView);
 
-		node = new Node(this);
+		//UI Must gather a name and create a listener before calling node.start
+		node = new Node(this,null,"");
+
 	}
 
 	@Override
@@ -73,42 +75,6 @@ public class MainActivity extends AppCompatActivity
 
 	private static boolean started = false;
 
-	public void sendFrames(View view)
-	{
-		/*if(!started)
-		{
-			started = true;
-			node = new Node(this);
-			node.start();
-			return;
-		}*/
 
-		node.broadcastFrame(new byte[1]);
 
-		for(int i = 0; i < 2000; ++i)
-		{
-			byte[] frameData = new byte[1024];
-			new Random().nextBytes(frameData);
-
-			node.broadcastFrame(frameData);
-		}
-
-		/*for(int i = 0; i < 100; ++i)
-		{
-			byte[] frameData = new byte[100 * 1024];
-			new Random().nextBytes(frameData);
-
-			node.broadcastFrame(frameData);
-		}*/
-	}
-
-	public void refreshPeers()
-	{
-		peersTextView.setText(node.getLinks().size() + " connected");
-	}
-
-	public void refreshFrames()
-	{
-		framesTextView.setText(node.getFramesCount() + " frames");
-	}
 } // MainActivity
