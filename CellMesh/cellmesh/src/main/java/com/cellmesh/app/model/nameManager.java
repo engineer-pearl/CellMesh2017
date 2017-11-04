@@ -11,7 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.nio.ByteBuffer;
 import java.io.UnsupportedEncodingException;
 
-class nameManager {
+public class nameManager {
     private SortedMap<Long, String> knownNames;
     private String knownNamesHash;
 
@@ -31,7 +31,7 @@ class nameManager {
             md.reset();
 
             for ( Map.Entry<Long,String> item : this.knownNames.entrySet() ) {
-                ByteBuffer LongBuffer = ByteBuffer.allocate(Long.BYTES);
+                ByteBuffer LongBuffer = ByteBuffer.allocate(Long.SIZE / 8);
                 LongBuffer.putLong(0, item.getKey());
                 md.update(LongBuffer);
 

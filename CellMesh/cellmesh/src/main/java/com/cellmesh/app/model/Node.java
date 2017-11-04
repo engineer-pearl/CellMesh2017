@@ -17,6 +17,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.Queue;
 
 import io.netty.util.AsciiString;
 import io.underdark.Underdark;
@@ -38,6 +39,7 @@ public class Node implements TransportListener
 	private ArrayList<Link> links = new ArrayList<>();
 	private Set<Long> ids=new HashSet<>();
 	private String name;
+
 	public Node(MainActivity activity,INodeListener listener,String name)
 	{
 		this.name=name;
