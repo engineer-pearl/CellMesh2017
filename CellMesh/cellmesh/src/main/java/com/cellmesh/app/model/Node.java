@@ -103,10 +103,11 @@ public class Node implements TransportListener
 	}
 
 	//Call this when the names need to be updated by the UID
-	private void handleNameUpdate(){
+
+	private void doNameUpdate(){
 		listener.onNamesUpdated(null);
 	}
-	private void handleSos(){
+	private void handleEmergencyMessage(){
 		listener.onEmergency(null);
 	}
 	//region TransportListener
