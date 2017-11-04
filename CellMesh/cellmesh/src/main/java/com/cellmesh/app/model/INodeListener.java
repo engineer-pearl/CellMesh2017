@@ -16,21 +16,41 @@
 
 package com.cellmesh.app.model;
 
-import io.underdark.transport.Link;
+import java.util.Map;
 
+import io.underdark.transport.Link;
 
 
 public interface INodeListener {
     /*
-    Called when a member joins our swarm.
+    Called when two members exchange name data.
+    UI MUST update to reflect new Link/Name associations.
      */
-    void onConnected(Link newLink);
+    void onNamesUpdated(Map<Long, String> names);
+
+    /*
+    Called when a member joins our swarm.
+    UI MAY display a notification acknowledging the event.
+    UI MAY keep a friends list. This is not a priority goal.
+     */
+    void onConnected(Long newLinkId);
+
     /*
     Called when a member leaves our swarm.
+    UI MAY display a notification acknloging the event.
+    UI MAY keep a friends list. This is not a priority goal.
      */
-    void onDisconnected(Link oldLink);
+    void onDisconnected(Long oldLinkId);
+
     /*
     Called when we receive data from a member.
+    UI MUST append the message to a message log with the name
+    currently associated with the link id.
      */
-    void onData(String newMessage, Link fromLink);
+    void onData(String newMessage, Long fromLinkId);
+    /*
+    Called when we receive an emergency notification from another link.
+    The UI MUST display a message acknologing the event.
+     */
+    void onEmergency(Long fromLinkId);
 }
