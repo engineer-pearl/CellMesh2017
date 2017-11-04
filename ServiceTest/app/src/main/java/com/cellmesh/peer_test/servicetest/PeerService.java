@@ -166,6 +166,7 @@ public class PeerService extends Service {
                 Log.d("P2P.ServiceDiscovery", "Service Discovery Failed");
             }
         });
+        p2pManager.connect();
         super.onCreate();
     }
 
