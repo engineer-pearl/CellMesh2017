@@ -101,10 +101,17 @@ public class Node implements TransportListener
 	}
 
 	//Call this when the names need to be updated by the UID
+<<<<<<< HEAD
 	private void handleNameUpdate(){
 		listener.onNamesUpdated(null);
 	}
 	private void handleSos(){
+=======
+	private void doNameUpdate(){
+		listener.onNamesUpdated(null);
+	}
+	private void handleEmergencyMessage(){
+>>>>>>> NewBen
 		listener.onEmergency(null);
 	}
 	//region TransportListener
