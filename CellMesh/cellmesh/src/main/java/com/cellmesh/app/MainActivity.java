@@ -12,17 +12,14 @@ import java.util.Random;
 import java.util.Set;
 
 import com.cellmesh.app.model.INodeListener;
-import com.cellmesh.app.model.nameManager;
 import com.cellmesh.app.model.Node;
 
-public class MainActivity extends AppCompatActivity implements INodeListener
+public class MainActivity extends AppCompatActivity
 {
 	private TextView peersTextView;
 	private TextView framesTextView;
 
 	Node node;
-
-	private nameManager nm;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -35,8 +32,6 @@ public class MainActivity extends AppCompatActivity implements INodeListener
 
 		//UI Must gather a name and create a listener before calling node.start
 		node = new Node(this,null,"");
-
-		// nm = new nameManager(node.
 
 	}
 
@@ -83,53 +78,4 @@ public class MainActivity extends AppCompatActivity implements INodeListener
 
 	private static boolean started = false;
 
-
-	@Override
-	public void onNamesUpdated(Map<Long, String> names) {
-
-	}
-
-	@Override
-	public void onConnected(Set<Long> readOnlyIds, Long newId) {
-
-	}
-
-	@Override
-	public void onDisconnected(Set<Long> readOnlyIds, Long oldLinkId) {
-
-	}
-
-	@Override
-	public void onDataReceived(String newMessage, Long fromLinkId) {
-		/*
-		00: reserved
-		01: node hash received
-		02: node data received
-		10: chat message received
-		 */
-
-		String op = newMessage.substring(0, 2);
-		String message = newMessage.substring(2);
-
-		if ( newMessage.startsWith("01") ) {
-			// Compare hash to my hash. If equal do nothing.
-			if ( message != nm.getHash() ) {
-
-			}
-		} else if ( newMessage.startsWith("02") ) {
-			// Add name {ID:Name}?
-		} else if ( newMessage.startsWith("10") ) {
-			// Handle message received
-		}
-	}
-
-	@Override
-	public void onDataSent(String newMessage, Long fromLinkId) {
-
-	}
-
-	@Override
-	public void onEmergency(Long fromLinkId) {
-
-	}
 } // MainActivity
