@@ -70,6 +70,10 @@ public class Node implements TransportListener
 		);
 	}
 
+	public Map<Long,String> getNamesMap() {
+		return Collections.unmodifiableMap(nm.getMap());
+	}
+	
 	private void configureLogging()
 	{
 		NSLoggerAdapter adapter = (NSLoggerAdapter)
@@ -168,8 +172,7 @@ public class Node implements TransportListener
 		02: node data received
 		10: chat message received
 		 */
-		// byte is interpreted by Java as an 8-bit signed integer, range -128 to +127
-		int op = frameData[0];
+		int op = Integer.parseInt(new String(frameData, 0, 1, StandardCharsets.US_ASCII));
 		String data = new String(frameData, 1, frameData.length, StandardCharsets.US_ASCII);
 
 		switch(op) {
