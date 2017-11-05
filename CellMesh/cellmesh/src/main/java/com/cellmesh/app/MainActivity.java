@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity
 		setContentView(R.layout.activity_main);
 
 		peersTextView = (TextView) findViewById(R.id.peersTextView);
-		framesTextView = (TextView) findViewById(R.id.framesTextView);
+		//framesTextView = (TextView) findViewById(R.id.framesTextView);
 
 		//UI Must gather a name and create a listener before calling node.start
 		node = new Node(this,null,"");

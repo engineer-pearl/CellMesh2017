@@ -8,33 +8,53 @@
                 android:paddingBottom="@dimen/activity_vertical_margin"
                 tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/peersTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="0 connected"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"/>
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_alignParentLeft="true"
+		android:layout_alignParentStart="true"
+		android:layout_alignParentTop="true"
+		android:layout_marginLeft="0dp"
+		android:layout_marginStart="0dp"
+		android:layout_marginTop="0dp"
+		android:gravity="top"
+		android:orientation="vertical">
 
-	<TextView
-		android:id="@+id/framesTextView"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:textAppearance="?android:attr/textAppearanceLarge"
-		android:text="0 frames"
-		android:layout_below="@+id/peersTextView"
-		android:layout_centerHorizontal="true"
-		android:layout_marginTop="60dp"/>
+		<TextView
+			android:id="@+id/textView"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="TextView" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Send frames"
-        android:id="@+id/sendFramesButton"
-        android:layout_below="@+id/framesTextView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
-	    android:onClick="sendFrames"/>
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="73dp"
+			android:orientation="vertical"></LinearLayout>
+
+		<TextView
+			android:id="@+id/peersTextView"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="No one is connected at this time" />
+
+		<ListView
+			android:layout_width="match_parent"
+			android:layout_height="match_parent" >
+
+			<TextView
+				android:id="@+id/textView2"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:text="TextView" />
+		</ListView>
+
+		<EditText
+			android:id="@+id/message"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:ems="10"
+			android:inputType="textMultiLine"
+			tools:text="message" />
+
+	</LinearLayout>
 </RelativeLayout>
