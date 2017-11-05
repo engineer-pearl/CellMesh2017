@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.Queue;
@@ -39,6 +40,7 @@ public class Node implements TransportListener
 	private ArrayList<Link> links = new ArrayList<>();
 	private Set<Long> ids=new HashSet<>();
 	private String name;
+	private nameManager nm;
 
 	public Node(MainActivity activity,INodeListener listener,String name)
 	{
@@ -52,6 +54,9 @@ public class Node implements TransportListener
 
 		if(nodeId < 0)
 			nodeId = -nodeId;
+
+		nm = new nameManager(nodeId, name);
+
 		ids.add(nodeId);
 		configureLogging();
 		EnumSet<TransportKind> kinds = EnumSet.of(TransportKind.BLUETOOTH, TransportKind.WIFI);
@@ -102,8 +107,12 @@ public class Node implements TransportListener
 			link.sendFrame(frameData.getBytes());
 	}
 
-	//Call this when the names need to be updated by the UID
+	public void sendMessage(String frameData, Link target)
+	{
+		target.sendFrame(frameData.getBytes());
+	}
 
+	//Call this when the names need to be updated by the UID
 	private void doNameUpdate(){
 		listener.onNamesUpdated(null);
 	}
@@ -123,6 +132,10 @@ public class Node implements TransportListener
 		Log.d("Mesh","Link "+Long.toString(link.getNodeId())+" Joined");
 		links.add(link);
 		ids.add(link.getNodeId());
+
+		// Send our name data hash.
+		sendMessage('1' + nm.getHash(), link);
+
 		listener.onConnected(Collections.unmodifiableSet(ids),link.getNodeId());
 	}
 
@@ -135,11 +148,50 @@ public class Node implements TransportListener
 		listener.onDisconnected(Collections.unmodifiableSet(ids),link.getNodeId());
 	}
 
+	private void compareHash(String hash, Link link) {
+		if ( !hash.equals(nm.getHash()) ) {
+			// Send our names.
+			Map<Long, String> map = nm.getMap();
+			for ( Map.Entry<Long,String> item : map.entrySet() ) {
+				String message =  '2' + Long.toString(item.getKey()) + ':' + item.getValue();
+				sendMessage(message, link);
+			}
+		}
+	}
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	@Override
 	public void transportLinkDidReceiveFrame(Transport transport, Link link, byte[] frameData)
 	{
-		listener.onDataReceived(new String(frameData, StandardCharsets.US_ASCII),link.getNodeId());
+		/*
+		00: reserved
+		01: node hash received
+		02: node data received
+		10: chat message received
+		 */
+		// byte is interpreted by Java as an 8-bit signed integer, range -128 to +127
+		int op = frameData[0];
+		String data = new String(frameData, 1, frameData.length, StandardCharsets.US_ASCII);
+
+		switch(op) {
+			case 0:
+				// Reserved
+				break;
+			case 1:
+				// Name hash received
+				compareHash(data, link);
+				break;
+			case 2:
+				// Name data received
+				if ( data.indexOf(':') > 0 ) {
+					Long srcId = Long.parseLong(data.substring(0, data.indexOf(':')));
+					String name = data.substring(data.indexOf(':'), data.length());
+
+					nm.addName(srcId, name);
+				}
+			case 10:
+				// Message received
+				listener.onDataReceived(data, link.getNodeId());
+		}
 	}
 	//endregion
 } // Node
